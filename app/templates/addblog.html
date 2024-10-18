@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ajouter un Blog</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #e9f5ff; /* Couleur de fond douce */
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 600px;
+            padding: 30px;
+            background: #fff; /* Fond blanc */
+            border-radius: 15px;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        h2 {
+            text-align: center;
+            color: #007bff; /* Titre bleu */
+            margin-bottom: 30px;
+            font-size: 2em; /* Taille de police plus grande */
+            font-weight: 600;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #333;
+            font-size: 1.1em; /* Taille de police légèrement plus grande */
+        }
+
+        input[type="text"],
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #007bff; /* Bordure bleue */
+            border-radius: 10px;
+            font-size: 1em;
+            transition: border-color 0.3s, box-shadow 0.3s;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        input[type="text"]:focus,
+        textarea:focus {
+            border-color: #0056b3; /* Bordure plus foncée au focus */
+            box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+            outline: none; /* Enlever le contour par défaut */
+        }
+
+        input[type="submit"] {
+            background-color: #007bff; /* Bouton bleu */
+            color: white;
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1.1em; /* Taille de police plus grande pour le bouton */
+            transition: background-color 0.3s, transform 0.3s;
+            width: 100%;
+        }
+
+        input[type="submit"]:hover {
+            background-color: #0056b3; /* Couleur plus foncée au survol */
+            transform: translateY(-2px); /* Effet de soulèvement au survol */
+        }
+
+        .loading,
+        .error-message,
+        .sent-message {
+            text-align: center;
+            margin-top: 10px;
+            font-weight: bold;
+            display: none; /* Masquer par défaut */
+        }
+
+        .loading {
+            color: #007bff; /* Couleur bleue pour le message de chargement */
+        }
+
+        .error-message {
+            color: #ff0000; /* Rouge pour les messages d'erreur */
+        }
+
+        .sent-message {
+            color: #28a745; /* Vert pour les messages de succès */
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Ajouter un Nouveau Blog</h2>
+    <form id="blogForm">
+        <div class="form-group">
+            <label for="imageInput">Image (URL)</label>
+            <input type="text" id="imageInput" name="image" required placeholder="Entrez l'URL de l'image">
+        </div>
+
+        <div class="form-group">
+            <label for="titleInput">Titre</label>
+            <input type="text" id="titleInput" name="title" required placeholder="Entrez le titre du blog">
+        </div>
+
+        <div class="form-group">
+            <label for="summaryInput">Résumé</label>
+            <textarea id="summaryInput" name="summary" required placeholder="Entrez un résumé" rows="3"></textarea>
+        </div>
+
+        <div class="form-group">
+            <label for="descriptionInput">Description</label>
+            <textarea id="descriptionInput" name="description" required placeholder="Entrez la description" rows="5"></textarea>
+        </div>
+
+        <div class="loading">Chargement...</div>
+        <div class="error-message"></div>
+        <div class="sent-message">Le blog a été ajouté avec succès!</div>
+
+        <input type="submit" value="Ajouter Blog">
+    </form>
+</div>
+
+<script>
+    document.getElementById('blogForm').addEventListener('submit', async function(event) {
+        event.preventDefault(); // Empêcher le rechargement de la page
+
+        // Récupérer les valeurs des champs
+        const imageInput = document.getElementById('imageInput').value.trim();
+        const titleInput = document.getElementById('titleInput').value.trim();
+        const summaryInput = document.getElementById('summaryInput').value.trim();
+        const descriptionInput = document.getElementById('descriptionInput').value.trim();
+
+        // Afficher le message de chargement
+        document.querySelector('.loading').style.display = 'block';
+
+        try {
+            const response = await fetch('/add_blog', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    image: imageInput,
+                    title: titleInput,
+                    summary: summaryInput,
+                    description: descriptionInput
+                })
+            });
+
+            // Masquer le message de chargement
+            document.querySelector('.loading').style.display = 'none';
+
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.message || 'Une erreur est survenue.');
+            }
+
+            // Si l'envoi a réussi, afficher le message de succès
+            document.querySelector('.sent-message').style.display = 'block';
+            document.querySelector('.error-message').style.display = 'none';
+
+            // Réinitialiser le formulaire
+            document.getElementById('blogForm').reset();
+            window.location.href = '/blog';
+        } catch (error) {
+            // Gérer les erreurs
+            document.querySelector('.error-message').innerText = error.message;
+            document.querySelector('.error-message').style.display = 'block';
+            document.querySelector('.sent-message').style.display = 'none';
+        }
+    });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,53 @@
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Keys Soft: Sign in</title>
+  <link rel="stylesheet" type="text/css" href="../static/assets/css/style.css">
+</head>
+
+<body>
+    <div class="container">
+        <div class="left">
+          <div class="header">
+            <h2 class="animation a1">Welcome Back</h2>
+            <h4 class="animation a2">Log in to your account using email and password</h4>
+          </div>
+          <div class="form">
+            <input type="email" id="email" class="form-field animation a3" placeholder="Email Address" required>
+            <input type="password" id="password" class="form-field animation a4" placeholder="Password" required>
+            <button id="login-button" class="animation a6">LOGIN</button>
+          </div>
+        </div>
+        <div class="right"></div>
+      </div>
+
+      <script>
+          document.getElementById('login-button').addEventListener('click', async () => {
+              const email = document.getElementById('email').value;
+              const password = document.getElementById('password').value;
+
+              try {
+                  const response = await fetch('/login', {
+                      method: 'POST',
+                      headers: {
+                          'Content-Type': 'application/json'
+                      },
+                      body: JSON.stringify({ email, password })
+                  });
+
+                  const result = await response.json();
+
+                  if (response.ok) {
+                      // Rediriger vers /add-blog si les informations sont valides
+                      window.location.href = '/add-blog'; 
+                  } else {
+                      alert(result.error); // Afficher une erreur si les informations sont incorrectes
+                  }
+              } catch (error) {
+                  console.error('Erreur lors de la connexion:', error);
+                  alert('Une erreur est survenue. Veuillez réessayer.');
+              }
+          });
+      </script>
+</body>
+</html>
