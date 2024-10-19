@@ -1,8 +1,10 @@
 import os
 import firebase_admin
-from firebase_admin import credentials, firestore
+from firebase_admin import credentials
 from flask import Flask
 from dotenv import load_dotenv
+import base64
+import json
 
 def create_app():
     app = Flask(__name__)
@@ -10,18 +12,24 @@ def create_app():
     # Charger les variables d'environnement
     load_dotenv()
 
-    # Charger le chemin du fichier d'identification Firebase depuis les variables d'environnement
+    # Chemin ou contenu des credentials Firebase
     cred_path = os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
+    firebase_credentials_base64 = os.getenv('FIREBASE_CREDENTIALS')
 
-    # Vérifiez que le chemin est défini
-    if not cred_path:
-        raise ValueError("Le chemin du fichier d'identification Firebase n'est pas défini dans les variables d'environnement")
+    if cred_path:
+        # Utiliser le fichier JSON en local
+        cred = credentials.Certificate(cred_path)
+    elif firebase_credentials_base64:
+        # Décoder la variable d'environnement encodée en base64 sur Vercel
+        decoded_credentials = base64.b64decode(firebase_credentials_base64)
+        cred_dict = json.loads(decoded_credentials)
+        cred = credentials.Certificate(cred_dict)
+    else:
+        raise ValueError("Les informations d'identification Firebase ne sont pas définies")
 
-    # Charger les credentials Firebase à partir du fichier JSON
-    cred = credentials.Certificate(cred_path)
-
-    # Initialiser Firebase avec les bonnes credentials
-    firebase_admin.initialize_app(cred, {"databaseURL": "https://keysholdings-6b588-default-rtdb.firebaseio.com/"
+    # Initialiser Firebase
+    firebase_admin.initialize_app(cred, {
+        "databaseURL": "https://keysholdings-6b588-default-rtdb.firebaseio.com/"
     })
 
     # Enregistrer les blueprints
@@ -29,8 +37,3 @@ def create_app():
     app.register_blueprint(keys)
 
     return app
-
-
-if __name__ == "__main__":
-    app = create_app()
-    app.run()
